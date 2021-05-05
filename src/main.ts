@@ -8,7 +8,10 @@ async function run(): Promise<void> {
     const channel = core.getInput('channel')
     const text = core.getInput('text')
     const thread_ts = core.getInput('thread_ts') || undefined
+    const username = core.getInput('username') || undefined
+    const icon_url = core.getInput('icon_url') || undefined
 
+    // API Reference: https://api.slack.com/methods/chat.postMessage
     await fetch('https://slack.com/api/chat.postMessage', {
       method: 'POST',
       headers: {
@@ -18,7 +21,9 @@ async function run(): Promise<void> {
       body: JSON.stringify({
         channel,
         text,
-        thread_ts
+        thread_ts,
+        username,
+        icon_url
       })
     })
 

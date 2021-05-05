@@ -9,6 +9,10 @@ inputs:
     required: true
   thread_ts:
     required: false
+  username:
+    required: false
+  icon_url:
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
