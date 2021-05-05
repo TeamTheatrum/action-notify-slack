@@ -1,11 +1,14 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Notify Slack'
+author: 'TeamTheatrum'
 inputs:
-  milliseconds: # change this
+  slack-bot-access-token:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  channel:
+    required: true
+  text:
+    required: true
+  thread_ts:
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'

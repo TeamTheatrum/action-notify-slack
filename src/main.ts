@@ -1,16 +1,28 @@
+import fetch from 'node-fetch'
+
 import * as core from '@actions/core'
-import {wait} from './wait'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+    const SLACK_BOT_ACCESS_TOKEN = core.getInput('slack-bot-access-token')
+    const channel = core.getInput('channel')
+    const text = core.getInput('text')
+    const thread_ts = core.getInput('thread_ts') || undefined
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    await fetch('https://slack.com/api/chat.postMessage', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${SLACK_BOT_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      body: JSON.stringify({
+        channel,
+        text,
+        thread_ts
+      })
+    })
 
-    core.setOutput('time', new Date().toTimeString())
+    core.debug('Message sent.')
   } catch (error) {
     core.setFailed(error.message)
   }
