@@ -41,6 +41,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const node_fetch_1 = __importDefault(__webpack_require__(467));
 const core = __importStar(__webpack_require__(186));
+function isUnknownObject(value) {
+    return value !== null && typeof value === 'object';
+}
+function isSlackResponse(value) {
+    if (isUnknownObject(value) &&
+        typeof value === 'object' &&
+        (('ok' in value && typeof value.ok === 'boolean') ||
+            ('error' in value && typeof value.error === 'string'))) {
+        return true;
+    }
+    return false;
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -48,7 +60,10 @@ function run() {
             const channel = core.getInput('channel');
             const text = core.getInput('text');
             const thread_ts = core.getInput('thread_ts') || undefined;
-            yield node_fetch_1.default('https://slack.com/api/chat.postMessage', {
+            const username = core.getInput('username') || undefined;
+            const icon_url = core.getInput('icon_url') || undefined;
+            // API Reference: https://api.slack.com/methods/chat.postMessage
+            const result = yield node_fetch_1.default('https://slack.com/api/chat.postMessage', {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${SLACK_BOT_ACCESS_TOKEN}`,
@@ -57,10 +72,24 @@ function run() {
                 body: JSON.stringify({
                     channel,
                     text,
-                    thread_ts
+                    thread_ts,
+                    username,
+                    icon_url
                 })
             });
-            core.debug('Message sent.');
+            if (!result.ok) {
+                throw new Error(`Failed: ${result.status}, ${result.statusText}`);
+            }
+            const resp = yield result.json();
+            if (!isSlackResponse(resp)) {
+                throw new Error(`Received invalid response: ${JSON.stringify(resp)}`);
+            }
+            if (resp.ok) {
+                core.debug(`Message successfully sent to channel: ${channel}`);
+            }
+            else {
+                throw new Error(resp.error);
+            }
         }
         catch (error) {
             core.setFailed(error.message);
